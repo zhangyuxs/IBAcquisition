@@ -1,0 +1,25 @@
+apply plugin: 'java'
+
+sourceSets.main.java.srcDir 'src' // 设置 Java 源码所在目录
+
+repositories {
+    mavenCentral()
+    maven { url "http://dev.mapfish.org/maven/repository/" } 
+   
+}
+
+dependencies {
+	compile 'org.springframework:spring-context:4.3.11.RELEASE'
+	compile 'org.hibernate:hibernate-core:5.0.1.Final:'
+	compile 'org.apache.activemq:activemq-client:5.8.0'
+	compile 'log4j:log4j:1.2.17'
+	compile fileTree(dir: 'lib', include: '*.jar')
+}
+
+task ultraAsSchemaJar(type:Jar) {
+    
+    baseName 'ultra_as-schema'
+    from 'bin'
+    include('com/ultra_as/schema/**')
+    
+}

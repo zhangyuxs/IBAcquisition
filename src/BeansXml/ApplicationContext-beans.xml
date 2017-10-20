@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context" 
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   
+	http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-2.5.xsd"> 
+	         
+    <context:component-scan base-package="com.airport.ais,com.ultra_as.schema"/>	         
+    <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"/>
+<!--  -->
+   	<bean id="AFDSActiveMQConnector" class="com.airport.ais.ibacquisition.jms.ActiveMQConnector">
+ 	     <constructor-arg   value="resource.afdsConnection"/>
+ 	     <property name="messageOutView" ref="messageOutView"/>
+ 	     <property name="messageInView" ref="messageInView"/>
+ 	</bean>
+    
+    
+ 	<bean id="AFDSMessageService" class="com.airport.ais.ibacquisition.service.MessageService">
+ 	    <property name="activeMQConnector" ref="AFDSActiveMQConnector"/>
+ 	    <property name="messageGenerator" ref="AFDSMessageGenerator"/>  
+ 	    <property name="messageParser" ref="messageParser"/>
+ 	    <property name="statusView" ref="statusView"/>
+ 	    <property name="subscriptionType" value="AFDS"/>
+ 	    <property name="statusRequestTimer" ref="AFDSStatusRequestTimer"/>
+   	</bean>
+	
+ 	<bean id="AFDSStatusRequestTimer" class="com.airport.ais.ibacquisition.timer.StatusRequestTimer">
+ 	    <property name="messageService" ref="AFDSMessageService"/>
+  	</bean>
+ <!--  --> 	
+ 	<bean id="RDDSActiveMQConnector" class="com.airport.ais.ibacquisition.jms.ActiveMQConnector">
+ 	     <constructor-arg   value="resource.rddsConnection"/>
+ 	     <property name="messageOutView" ref="messageOutView"/>
+ 	     <property name="messageInView" ref="messageInView"/>
+  	</bean>
+    
+   
+ 	<bean id="RDDSMessageService" class="com.airport.ais.ibacquisition.service.MessageService">
+ 	    <property name="activeMQConnector" ref="RDDSActiveMQConnector"/>
+ 	    <property name="messageGenerator" ref="RDDSMessageGenerator"/>  
+ 	    <property name="messageParser" ref="messageParser"/>
+ 	    <property name="statusView" ref="statusView"/>
+ 	    <property name="subscriptionType" value="RDDS"/>
+ 	    <property name="statusRequestTimer" ref="RDDSStatusRequestTimer"/>
+   	</bean>
+	
+ 	<bean id="RDDSStatusRequestTimer" class="com.airport.ais.ibacquisition.timer.StatusRequestTimer">
+ 	    <property name="messageService" ref="RDDSMessageService"/>
+ 	    
+ 	</bean>
+<!--  --> 	
+	<bean id="BDDSActiveMQConnector" class="com.airport.ais.ibacquisition.jms.ActiveMQConnector">
+ 	     <constructor-arg   value="resource.bddsConnection"/>
+ 	     <property name="messageOutView" ref="messageOutView"/>
+ 	     <property name="messageInView" ref="messageInView"/>
+ 	</bean>
+    
+   
+ 	<bean id="BDDSMessageService" class="com.airport.ais.ibacquisition.service.MessageService">
+ 	    <property name="activeMQConnector" ref="BDDSActiveMQConnector"/>
+ 	    <property name="messageGenerator" ref="BDDSMessageGenerator"/>  
+ 	    <property name="messageParser" ref="messageParser"/>
+ 	    <property name="statusView" ref="statusView"/>
+ 	    <property name="subscriptionType" value="BDDS"/>
+ 	    <property name="statusRequestTimer" ref="BDDSStatusRequestTimer"/>
+   	</bean>
+	
+ 	<bean id="BDDSStatusRequestTimer" class="com.airport.ais.ibacquisition.timer.StatusRequestTimer">
+ 	    <property name="messageService" ref="BDDSMessageService"/>
+ 	</bean>
+<!--  --> 	
+	<bean id="SFDSActiveMQConnector" class="com.airport.ais.ibacquisition.jms.ActiveMQConnector">
+ 	     <constructor-arg   value="resource.sfdsConnection"/>
+ 	     <property name="messageOutView" ref="messageOutView"/>
+ 	     <property name="messageInView" ref="messageInView"/>
+ 	</bean>
+    
+   
+ 	<bean id="SFDSMessageService" class="com.airport.ais.ibacquisition.service.MessageService">
+ 	    <property name="activeMQConnector" ref="SFDSActiveMQConnector"/>
+ 	    <property name="messageGenerator" ref="SFDSMessageGenerator"/>  
+ 	    <property name="messageParser" ref="messageParser"/>
+ 	    <property name="statusView" ref="statusView"/>
+ 	    <property name="subscriptionType" value="SFDS"/>
+   	</bean>
+	
+ 	<bean id="SFDSStatusRequestTimer" class="com.airport.ais.ibacquisition.timer.StatusRequestTimer">
+ 	    <property name="messageService" ref="SFDSMessageService"/>
+ 	</bean> 	
+ 	
+ 		
+</beans>

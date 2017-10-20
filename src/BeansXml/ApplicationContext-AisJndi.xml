@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	         http://www.springframework.org/schema/beans/spring-beans.xsd
+	         http://www.springframework.org/schema/jee      
+	         http://www.springframework.org/schema/jee/spring-jee.xsd 
+	         ">
+
+	<jee:jndi-lookup id="nngService" 
+		jndi-name="ejb:/nng_Aodb_Ejb-0.9.0//NNGAodbService!com.airport.ais.service.INNGAodbService">
+		<jee:environment>
+			java.naming.factory.url.pkgs=org.jboss.ejb.client.naming
+			jboss.naming.client.ejb.context=true
+		</jee:environment>
+	</jee:jndi-lookup>
+	
+	
+	<jee:jndi-lookup id="generalService" 
+		jndi-name="ejb:/General_Ejb-0.9.0//GeneralService!com.airport.ais.service.IGeneralService">
+		<jee:environment>
+			java.naming.factory.url.pkgs=org.jboss.ejb.client.naming
+			jboss.naming.client.ejb.context=true
+		</jee:environment>
+	</jee:jndi-lookup>
+	
+	<jee:jndi-lookup id="aommsService" 
+		jndi-name="ejb:/nng_Aomms_Ejb-0.9.0//NNGAommsService!com.airport.ais.service.INNGAommsService">
+		<jee:environment>
+			java.naming.factory.url.pkgs=org.jboss.ejb.client.naming
+			jboss.naming.client.ejb.context=true
+		</jee:environment>
+	</jee:jndi-lookup>
+ 	
+</beans>	         
