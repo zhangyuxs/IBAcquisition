@@ -1,1 +1,12 @@
 
+/afdsConnection.properties
+/afdsSubscription.properties
+/bddsConnection.properties
+/bddsSubscription.properties
+/client.properties
+/log4j.properties
+/message.properties
+/rddsConnection.properties
+/rddsSubscription.properties
+/sfdsConnection.properties
+/sfdsSubscription.properties

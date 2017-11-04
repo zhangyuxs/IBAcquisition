@@ -2,7 +2,6 @@ package com.airport.ais.ibacquisition.handler;
 
 import javax.annotation.Resource;
 import org.springframework.stereotype.Component;
-
 import com.airport.ais.ibacquisition.utils.Utils;
 import com.airport.ais.models.collection.IBMessage;
 import com.airport.ais.service.IGeneralService;
@@ -45,13 +44,6 @@ public class MessageParser  {
     private static final String MessageOriginatorID     = "MessageOriginatorID";
     
     private static final String OriginatorDateTime      = "OriginatorDateTime";
-	
-    
-    
-	
-	
-
-
 	
 
 	/**

@@ -103,6 +103,9 @@
             <separator
                   name="sub.sp">
             </separator>
+            <separator
+                  name="gs.sp">
+            </separator>
          </menu>
          <menu
                id="AFDSMenu"
@@ -159,6 +162,16 @@
                style="push"
                toolbarPath="subscriptionTB">
          </action>
+	     <action
+            allowLabelUpdate="true"
+            class="com.airport.ais.plugin.ViewExtensionFactory"
+            definitionId="StatusAction"
+            icon="icons/status.gif"
+            id="groundServiceAction"
+            label="地服系统订阅"
+            menubarPath="subscriptionMenu/gs.sp"
+            style="push">
+         </action>         
          <action
                allowLabelUpdate="true"
                definitionId="AFDS"

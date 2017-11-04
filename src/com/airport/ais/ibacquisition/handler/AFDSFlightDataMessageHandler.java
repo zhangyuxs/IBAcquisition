@@ -788,6 +788,7 @@ public class AFDSFlightDataMessageHandler implements IMessageHandler<AFDSFlightD
 				dynamicFlight.getPassengers().clear();
 				dynamicFlight.getBaggageReclaimCarousels().clear();
 				dynamicFlight.getShareFlights().clear();
+				dynamicFlight.getEnsuerServces().clear();
 			}
 			update(ibFlight, dynamicFlight);
 		}

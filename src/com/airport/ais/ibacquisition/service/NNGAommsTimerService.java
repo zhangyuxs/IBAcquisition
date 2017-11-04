@@ -9,9 +9,12 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import com.airport.ais.dao.parameter.QueryCondition;
 import com.airport.ais.enums.aodb.FlightDirection;
+import com.airport.ais.ibacquisition.view.MessageInView;
 import com.airport.ais.models.aodb.basic.Airport;
 import com.airport.ais.models.aodb.flight.DynamicFlight;
 import com.airport.ais.models.aodb.flight.DynamicFlight.EnsureService;
@@ -41,6 +44,7 @@ import com.airport.ais.utils.ObjectMethodUtil;
 
 
 @Component
+@EnableScheduling
 public class NNGAommsTimerService  {
 	
 	/**
@@ -64,6 +68,11 @@ public class NNGAommsTimerService  {
 	@Resource
 	private INNGAodbService<String, Airport> airportService;
 	
+	
+	@Resource
+	private MessageInView messageInView;
+	
+	
 	private static final String[] loadFields = new String[]{LoadFlight.LOADDEPARTUREAIRPORT,LoadFlight.LOADDEPARTUREAIRPORT,LoadFlight.ADULT,
 			LoadFlight.CHD,LoadFlight.INF,LoadFlight.CARGO,LoadFlight.MAIL,LoadFlight.BAGGAGE};
 	
@@ -86,7 +95,7 @@ public class NNGAommsTimerService  {
 	 * @return 获取D-1到D+1的载量信息
 	 * @throws Exception
 	 */
-	protected List<AommsDcsLegInfo> getDcsInfos() throws Exception {
+	public List<AommsDcsLegInfo> getDcsInfos() throws Exception {
 		QueryCondition condition = new QueryCondition();
 		condition.setExpression(new Object[]{AommsDcsLegInfo.OPERATIONDATE,">=",DateTimeUtil.addToDay(new Date(), -1),
 				"AND",AommsDcsLegInfo.OPERATIONDATE,"<=",DateTimeUtil.addToDay(new Date(), 1)});
@@ -99,20 +108,21 @@ public class NNGAommsTimerService  {
 	 * @return 获取D-1到D+1的服务信息
 	 * @throws Exception
 	 */
-	protected List<VAommsInfo> getAommsInfos() throws Exception{
+	public List<VAommsInfo> getAommsInfos() throws Exception{
 		/*  
 		 *   条件：
 		 *   区间：D-1到D+1
 		 *   出港： 计划起飞时间小于现在时间后两小时
 		 *   进港：实际进港时间大于现在时间前两小时
 		 */
-		Date arrivalLimitTime = DateTimeUtil.addMillisecond(new Date(), 120*60*1000);
-		Date departureLimitTime   = DateTimeUtil.addMillisecond(new Date(), 120*60*1000);
+		Date arrivalLimitTime = DateTimeUtil.addMillisecond(new Date(), -1200*60*1000);
+		Date departureLimitTime   = DateTimeUtil.addMillisecond(new Date(), 1200*60*1000);
+		
 		QueryCondition condition = new QueryCondition();
 		condition.setExpression(new Object[]{VAommsInfo.OPERATIONDATE,">=",DateTimeUtil.addToDay(new Date(), -1),
 				"AND",VAommsInfo.OPERATIONDATE,"<=",DateTimeUtil.addToDay(new Date(), 1),
-				"AND","(",VAommsInfo.AORD,"=","D","AND",VAommsInfo.STD,"<=",departureLimitTime,")",
-				"AND","(",VAommsInfo.AORD,"=","A","AND",VAommsInfo.ATA,">=",arrivalLimitTime,")"});
+				"AND","(","(",VAommsInfo.AORD,"=","D","AND",VAommsInfo.STD,"<=",departureLimitTime,")",
+				"OR","(",VAommsInfo.AORD,"=","A","AND",VAommsInfo.ATA,">=",arrivalLimitTime,")",")"});
 		return vAommsInfoService.findByConditionAll(condition, VAommsInfo.class);
 		
 	}
@@ -158,31 +168,33 @@ public class NNGAommsTimerService  {
 			throws Exception {
 		Set<EnsureService> services = flight.getEnsuerServces();
 		for (VAommsInfo vAommsInfo:vAommsInfos){
-			EnsureService currentService = null;
-			for (EnsureService service:services){
-				if (service.getEnsureCode().equals(vAommsInfo.getDetailNo())){
-					currentService = service;
-					break;
+			if (equalsByFlightId(flight, vAommsInfo.getFlightNo(), vAommsInfo.getOperationDate(), vAommsInfo.getAord())){
+				EnsureService currentService = null;
+				for (EnsureService service:services){
+					if (service.getEnsureCode().equals(vAommsInfo.getDetailNo())){
+						currentService = service;
+						break;
+					}
 				}
+				if (currentService == null){
+					currentService = new EnsureService();
+					currentService.setEnsureCode(vAommsInfo.getDetailNo());
+					currentService.setEnsureName(vAommsInfo.getDetailName());
+					flight.getEnsuerServces().add(currentService);
+				}
+				if (!ObjectMethodUtil.equalsField(currentService.getPlanStartTime(), vAommsInfo.getSchedStartTime())){
+					currentService.setPlanStartTime(vAommsInfo.getSchedStartTime());
+				}
+				if (!ObjectMethodUtil.equalsField(currentService.getPlanEndTime(),vAommsInfo.getSchedEndTime())){
+					currentService.setPlanEndTime(vAommsInfo.getSchedEndTime());
+				}
+				if (!ObjectMethodUtil.equalsField(currentService.getActualStartTime(), vAommsInfo.getActualStartTime())){
+					currentService.setActualStartTime(vAommsInfo.getActualStartTime());
+				}
+				if (!ObjectMethodUtil.equalsField(currentService.getActualEndTime(), vAommsInfo.getActualEndTime())){
+					currentService.setActualEndTime(vAommsInfo.getActualEndTime());
+				}			
 			}
-			if (currentService == null){
-				currentService = new EnsureService();
-				currentService.setEnsureCode(vAommsInfo.getDetailNo());
-				currentService.setEnsureName(vAommsInfo.getDetailName());
-				flight.getEnsuerServces().add(currentService);
-			}
-			if (!ObjectMethodUtil.equalsField(currentService.getPlanStartTime(), vAommsInfo.getSchedStartTime())){
-				currentService.setPlanStartTime(vAommsInfo.getSchedStartTime());
-			}
-			if (!ObjectMethodUtil.equalsField(currentService.getPlanEndTime(),vAommsInfo.getSchedEndTime())){
-				currentService.setPlanEndTime(vAommsInfo.getSchedEndTime());
-			}
-			if (!ObjectMethodUtil.equalsField(currentService.getActualStartTime(), vAommsInfo.getActualStartTime())){
-				currentService.setActualStartTime(vAommsInfo.getActualStartTime());
-			}
-			if (!ObjectMethodUtil.equalsField(currentService.getActualEndTime(), vAommsInfo.getActualEndTime())){
-				currentService.setActualEndTime(vAommsInfo.getActualEndTime());
-			}			
 		}
 		dynamicFlightService.update(flight);
 
@@ -262,14 +274,16 @@ public class NNGAommsTimerService  {
 	 * 定时更新服务环节
 	 * @throws Exception
 	 */
+	@Scheduled(cron = "0 0/1 * * * ?")
 	public void timerUpdateByVAommsInfo() throws Exception{
 		List<DynamicFlight> flights = getDynamicFlight();
 		List<VAommsInfo> aommsInfos = getAommsInfos();
+		messageInView.appendMessage("更新"+aommsInfos.size()+"条服务数据\n");
 		for (DynamicFlight flight:flights){
 			updateByVAommsInfo(flight, aommsInfos); 
 			
 		}
-		
+		messageInView.appendMessage("更新服务数据完毕\n");
 	}
 	
 	
@@ -277,12 +291,16 @@ public class NNGAommsTimerService  {
 	 * 定时更新航班的载量
 	 * @throws Exception
 	 */
+	@Scheduled(cron = "0 0/180 * * * ?")
 	public void timerUpdateByDcsInfo() throws Exception{
 		List<DynamicFlight> flights = getDynamicFlight();
 		List<AommsDcsLegInfo> dcsInfos = getDcsInfos();
+		messageInView.appendMessage("更新"+dcsInfos.size()+"条服务数据\n");
 		for (DynamicFlight flight:flights){
 			updateByDcsInfo(flight, dcsInfos);
 		}
+		messageInView.appendMessage("更新载量数据完毕\n");
+		System.out.println(new Date());
 		
 	}
 
